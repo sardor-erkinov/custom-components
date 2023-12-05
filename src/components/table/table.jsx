@@ -16,4 +16,3 @@ Table.TFoot = TFoot
 Table.Tr = Tr
 Table.Td = Td
 Table.Th = Th
-

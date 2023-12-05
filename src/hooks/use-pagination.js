@@ -1,22 +1,62 @@
 import { useCallback, useMemo, useState } from "react"
 
-export const usePagination = ({ total = 0, pageSize: size = 0 }) => {
+const pageSizes = [
+    {
+        id: 1,
+        size: 5,
+        suffix: "tadan"
+    },
+    {
+        id: 2,
+        size: 10,
+        suffix: "tadan"
+    },
+    {
+        id: 3,
+        size: 20,
+        suffix: "tadan"
+    },
+    {
+        id: 4,
+        size: 50,
+        suffix: "tadan"
+    },
+    {
+        id: 5,
+        size: 100,
+        suffix: "tadan"
+    },
+]
+
+export const usePagination = ({ total = 0, pageSize: size = pageSizes[0].size, sizes = pageSizes }) => {
 
     const [pageSize, setPageSize] = useState(size)
     const [currentPage, setCurrentPage] = useState(total > 0 ? 1 : 0)
 
     const pageCount = useMemo(() => Math.ceil(total / pageSize), [pageSize, total])
 
-    const getPaginationProps = useCallback(({
-        clickNextPage: nextPage,
-        clickPageNum: clickPage
-    }) => {
+    const getPaginationProps = useCallback((
+        prevPage,
+        nextPage,
+        clickPage
+    ) => {
+
         const clickNextPage = (props) => {
             if (nextPage) {
                 nextPage(props)
             } else {
                 if (pageCount > currentPage) {
                     setCurrentPage((curPage) => curPage + 1)
+                }
+            }
+        }
+
+        const clickPrevPage = (props) => {
+            if (prevPage) {
+                prevPage(props)
+            } else {
+                if (currentPage > 1) {
+                    setCurrentPage((curPage) => curPage - 1)
                 }
             }
         }
@@ -32,38 +72,38 @@ export const usePagination = ({ total = 0, pageSize: size = 0 }) => {
         return {
             setCurrentPage,
             clickPageNum,
-            clickNextPage
+            clickNextPage,
+            clickPrevPage
         };
 
     }, [currentPage, pageCount])
 
-    const getPageSizeProps = useCallback(({
-        pageSize: sizeOfPage,
-        setPageSize: setSizeOfPage,
-        onChangePageSize
-    }) => {
-
+    const getPageSizeProps = useCallback((onChangePageSize = undefined) => {
         /**
          * @param {number} size A positive or negative number
         */
 
         const changePageSize = (size) => {
-            setSizeOfPage ? setSizeOfPage(size) : setPageSize(size)
+            setPageSize(size)
+            setCurrentPage(1)
             onChangePageSize && onChangePageSize()
         }
 
         return {
-            pageSize: sizeOfPage ?? pageSize,
-            onChange: changePageSize
+            onChange: changePageSize,
+            sizes,
+            pageSize
         }
 
-    }, [pageSize])
+    }, [pageSize, sizes])
 
     return {
         getPaginationProps,
         getPageSizeProps,
         pageCount,
-        currentPage
+        currentPage,
+        pageSize,
+        sizes
     }
 
 }
